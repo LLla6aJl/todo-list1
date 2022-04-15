@@ -54,7 +54,9 @@ export default class App extends Component {
   };
 
   addItem = (text) => {
-    const newItem = this.createTodoItem(text);
+    const item = text.replace(/ +/g, ' ').trim();
+    if (item === '') return;
+    const newItem = this.createTodoItem(item);
 
     this.setState(({ todoData }) => {
       const myarray = [...todoData, newItem];

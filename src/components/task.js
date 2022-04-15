@@ -23,7 +23,7 @@ export default class TodoListItem extends Component {
             <span role="presentation" className="description" onClick={onToggleDone} onKeyUp={onToggleDone}>
               {label}
             </span>
-            <span className="created">{createdTime}</span>
+            <span className="created">created {createdTime} ago</span>
           </label>
           <button type="button" className="icon icon-edit" onClick={this.onItemEdit} />
           <button type="button" className="icon icon-destroy" onClick={onDeleted} aria-label="log out" />
