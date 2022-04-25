@@ -15,9 +15,9 @@ export default class App extends Component {
 
     this.state = {
       todoData: [
-        this.createTodoItem('Completed task'),
-        this.createTodoItem('Editing task'),
-        this.createTodoItem('Active task'),
+        this.createTodoItem('Completed task', 2, 30),
+        this.createTodoItem('Editing task', 2, 10),
+        this.createTodoItem('Active task', 2, 35),
       ],
       filter: 'all',
     };
@@ -53,10 +53,10 @@ export default class App extends Component {
     });
   };
 
-  addItem = (text) => {
-    const item = text.replace(/ +/g, ' ').trim();
+  addItem = (label, minCount, secCount) => {
+    const item = label.replace(/ +/g, ' ').trim();
     if (item === '') return;
-    const newItem = this.createTodoItem(item);
+    const newItem = this.createTodoItem(item, minCount, secCount);
 
     this.setState(({ todoData }) => {
       const myarray = [...todoData, newItem];
@@ -85,13 +85,15 @@ export default class App extends Component {
     });
   };
 
-  createTodoItem(label) {
+  createTodoItem(label, minCount, secCount) {
     this.maxId += 1;
+
     return {
       label,
       done: false,
       id: this.maxId,
       date: new Date(),
+      timeToSolve: minCount * 60 + secCount,
     };
   }
 
