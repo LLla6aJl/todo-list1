@@ -66,6 +66,7 @@ export default class TodoListItem extends Component {
       classNames += 'completed';
       checked = true;
       timeToSolve = 0;
+      clearInterval(this.counterID);
     }
 
     return (
