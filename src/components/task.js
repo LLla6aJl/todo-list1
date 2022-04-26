@@ -47,7 +47,8 @@ export default class TodoListItem extends Component {
   render() {
     const { label, onDeleted, onToggleDone, done, date } = this.props;
 
-    const { timeToSolve, timeGo } = this.state;
+    // eslint-disable-next-line prefer-const
+    let { timeToSolve, timeGo } = this.state;
 
     const buttonTimer = !timeGo ? (
       /* eslint-disable-next-line jsx-a11y/control-has-associated-label */
@@ -64,6 +65,7 @@ export default class TodoListItem extends Component {
     if (done) {
       classNames += 'completed';
       checked = true;
+      timeToSolve = 0;
     }
 
     return (
