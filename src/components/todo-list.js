@@ -1,17 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
+// eslint-disable-next-line import/no-cycle
+import { UserContext } from '..';
 
 import TodoListItem from './task';
 
-function TodoList({ todos, onDeleted, onToggleDone }) {
-  const elements = todos.map((item) => {
-    const { id, ...itemsProps } = item;
-
-    return (
-      /* eslint-disable-next-line react/jsx-props-no-spreading */
-      <TodoListItem {...itemsProps} key={id} onDeleted={() => onDeleted(id)} onToggleDone={() => onToggleDone(id)} />
-    );
-  });
+function TodoList() {
+  const value = React.useContext(UserContext);
+  const { visibleItems } = value;
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  const elements = visibleItems.map((item) => <TodoListItem key={item.id} {...item} />);
 
   return <ul className="todo-list">{elements}</ul>;
 }
@@ -23,7 +21,7 @@ TodoList.defaultProps = {
   onToggleDone: () => {},
 };
 
-TodoList.propTypes = {
-  onDeleted: PropTypes.func,
-  onToggleDone: PropTypes.func,
-};
+// TodoList.propTypes = {
+//   onDeleted: PropTypes.func,
+//   onToggleDone: PropTypes.func,
+// };

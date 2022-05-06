@@ -1,105 +1,113 @@
-import React, { Component } from 'react';
+/* eslint-disable import/no-cycle */
+import React, { useState } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
-import PropTypes from 'prop-types';
 
-export default class TodoListItem extends Component {
-  // eslint-disable-next-line react/state-in-constructor
-  state = {
-    // eslint-disable-next-line react/destructuring-assignment
-    timeToSolve: this.props.timeToSolve,
-    timeGo: false,
-  };
+import { UserContext } from '..';
 
-  componentWillUnmount() {
-    clearInterval(this.counterID);
-  }
+export default function TodoListItem(props) {
+  const value = React.useContext(UserContext);
 
-  secDecrement = () => {
-    const { timeToSolve, timeGo } = this.state;
-    if (timeToSolve === 0 && timeGo === true) {
-      clearInterval(this.counterID);
-      this.setState({
-        timeGo: false,
-      });
+  const { deleteItem, onToggleDone } = value;
+  const { id, label, done, date, timeToSolve } = props;
+
+  const [timeToSolved, setTimeToSolve] = useState(timeToSolve);
+  const [timeGo, setTimeGo] = useState(false);
+  let counterID;
+  // componentWillUnmount() {
+  //   clearInterval(this.counterID);
+  // }
+
+  const secDecrement = () => {
+    // const { timeToSolve, timeGo } = this.state;
+    if (timeToSolved === 0 && timeGo === true) {
+      clearInterval(counterID);
+      setTimeGo(false);
     }
-    if (timeToSolve > 0) {
-      this.setState({
-        timeToSolve: timeToSolve - 1,
-        timeGo: true,
-      });
+    if (timeToSolved > 0) {
+      setTimeToSolve((time) => time - 1);
+      setTimeGo(true);
     }
   };
 
-  handlePause = (event) => {
+  const handlePause = (event) => {
     event.stopPropagation();
-    this.setState({ timeGo: false });
-    clearInterval(this.counterID);
+    setTimeGo(false);
+    clearInterval(counterID);
   };
 
-  handleStart = (event) => {
+  const handleStart = (event) => {
     event.stopPropagation();
-    this.setState({ timeGo: true });
-    this.counterID = setInterval(() => {
-      this.secDecrement();
+    setTimeGo(true);
+    counterID = setInterval(() => {
+      secDecrement();
     }, 1000);
   };
 
-  render() {
-    const { label, onDeleted, onToggleDone, done, date } = this.props;
+  const buttonTimer = !timeGo ? (
+    /* eslint-disable-next-line jsx-a11y/control-has-associated-label */
+    <button type="button" className="icon icon-play" onClick={handleStart} />
+  ) : (
+    /* eslint-disable-next-line jsx-a11y/control-has-associated-label */
+    <button type="button" className="icon icon-pause" onClick={handlePause} />
+  );
 
-    // eslint-disable-next-line prefer-const
-    let { timeToSolve, timeGo } = this.state;
-
-    const buttonTimer = !timeGo ? (
-      /* eslint-disable-next-line jsx-a11y/control-has-associated-label */
-      <button type="button" className="icon icon-play" onClick={this.handleStart} />
-    ) : (
-      /* eslint-disable-next-line jsx-a11y/control-has-associated-label */
-      <button type="button" className="icon icon-pause" onClick={this.handlePause} />
-    );
-
-    let classNames = '';
-    let checked = false;
-
-    const createdTime = formatDistanceToNow(date, { includeSeconds: true });
-    if (done) {
-      classNames += 'completed';
-      checked = true;
-      timeToSolve = 0;
-      clearInterval(this.counterID);
-    }
-
-    return (
-      <li className={classNames}>
-        <div className="view">
-          <input className="toggle" readOnly id={label} type="checkbox" onClick={onToggleDone} checked={checked} />
-          <label role="presentation" htmlFor={label} onClick={onToggleDone} onKeyUp={onToggleDone}>
-            <span role="presentation" className="title" onClick={onToggleDone} onKeyUp={onToggleDone}>
-              {label}
-            </span>
-            <span className="description">
-              {buttonTimer} {format(timeToSolve * 1000, 'mm:ss')}
-            </span>
-            <span className="description"> created {createdTime} ago</span>
-          </label>
-          <button type="button" className="icon icon-edit" onClick={this.onItemEdit} />
-          <button type="button" className="icon icon-destroy" onClick={onDeleted} aria-label="log out" />
-        </div>
-      </li>
-    );
+  let classNames = '';
+  let checked = false;
+  if (done) {
+    classNames += 'completed';
+    checked = true;
+    setTimeToSolve(0);
+    clearInterval(counterID);
   }
+  // const createdTime = formatDistanceToNow(date, { includeSeconds: true });
+
+  return (
+    <li className={classNames}>
+      <div className="view">
+        <input
+          className="toggle"
+          readOnly
+          id={id}
+          type="checkbox"
+          onClick={() => {
+            onToggleDone(id);
+          }}
+          checked={checked}
+        />
+        <label
+          role="presentation"
+          htmlFor={label}
+          // onClick={(id) => onToggleDone(id)}
+          // onKeyUp={(id) => onToggleDone(id)}
+        >
+          <span
+            role="presentation"
+            className="title"
+            // onClick={(id) => onToggleDone(id)}
+            // onKeyUp={(id) => onToggleDone(id)}
+          >
+            {label}
+          </span>
+          <span className="description">{/* {buttonTimer} {format(timeToSolve * 1000, 'mm:ss')} */}</span>
+          {/* <span className="description"> created {createdTime} ago</span> */}
+        </label>
+        <button type="button" className="icon icon-edit" />
+        <button type="button" className="icon icon-destroy" onClick={deleteItem} aria-label="log out" />
+      </div>
+    </li>
+  );
 }
 
-TodoListItem.defaultProps = {
-  label: 'default task',
-  onDeleted: () => {},
-  onToggleDone: () => {},
-  done: true,
-};
+// TodoListItem.defaultProps = {
+//   label: 'default task',
+//   onDeleted: () => {},
+//   onToggleDone: () => {},
+//   done: true,
+// };
 
-TodoListItem.propTypes = {
-  label: PropTypes.string,
-  onDeleted: PropTypes.func,
-  onToggleDone: PropTypes.func,
-  done: PropTypes.bool,
-};
+// TodoListItem.propTypes = {
+//   label: PropTypes.string,
+//   onDeleted: PropTypes.func,
+//   onToggleDone: PropTypes.func,
+//   done: PropTypes.bool,
+// };

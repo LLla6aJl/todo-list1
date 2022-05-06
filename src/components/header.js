@@ -1,78 +1,81 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+// import PropTypes from 'prop-types';
 
-export default class Header extends Component {
-  constructor(props) {
-    super(props);
+// eslint-disable-next-line import/no-cycle
+import { UserContext } from '..';
 
-    this.state = {
-      label: '',
-      minCount: '',
-      secCount: '',
-    };
-  }
+export default function Header() {
+  const value = React.useContext(UserContext);
+  const { addItem } = value;
 
-  onLabelChange = (event) => {
-    this.setState({
-      [event.target.name]: event.target.value,
-    });
-  };
+  const [label, setLabel] = useState('');
+  const [minCount, setMin] = useState('');
+  const [secCount, setSec] = useState('');
 
-  onSubmit = (e) => {
-    const { onItemAdded } = this.props;
-    const { label, minCount, secCount } = this.state;
+  // onLabelChange = (event) => {
+  //   setData({
+  //     [event.target.name]: event.target.value,
+  //   });
+  // };
+
+  const onSubmit = (e) => {
+    console.log(e);
     if (minCount || secCount)
       if (e.key === 'Enter') {
         const minCountValue = +minCount;
         const secCountValue = +secCount;
         if (Number.isInteger(minCountValue) && Number.isInteger(minCountValue)) {
-          onItemAdded(label, minCountValue, secCountValue);
-
-          this.setState({ label: '', minCount: '', secCount: '' });
+          addItem(label, minCountValue, secCountValue);
+          setLabel('');
+          setMin('');
+          setSec('');
           // eslint-disable-next-line no-alert
         } else alert('Вы неверно указали время выполнения задания');
       }
   };
 
-  render() {
-    const { label, minCount, secCount } = this.state;
-    return (
-      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-      <form className="header new-todo-form" onKeyPress={this.onSubmit}>
-        <h1 className="title">todos</h1>
-        <input
-          type="text"
-          className="new-todo"
-          name="label"
-          placeholder="What needs to be done?"
-          onChange={this.onLabelChange}
-          value={label}
-        />
-        <input
-          type="text"
-          className="new-todo-form__timer"
-          placeholder="Min"
-          name="minCount"
-          onChange={this.onLabelChange}
-          value={minCount}
-        />
-        <input
-          type="text"
-          className="new-todo-form__timer"
-          placeholder="Sec"
-          name="secCount"
-          onChange={this.onLabelChange}
-          value={secCount}
-        />
-      </form>
-    );
-  }
+  return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+    <form className="header new-todo-form" onKeyPress={(e) => onSubmit(e)}>
+      <h1 className="title">todos</h1>
+      <input
+        type="text"
+        className="new-todo"
+        name="label"
+        placeholder="What needs to be done?"
+        onChange={(event) => {
+          setLabel(event.target.value);
+        }}
+        value={label}
+      />
+      <input
+        type="text"
+        className="new-todo-form__timer"
+        placeholder="Min"
+        name="minCount"
+        onChange={(event) => {
+          setMin(event.target.value);
+        }}
+        value={minCount}
+      />
+      <input
+        type="text"
+        className="new-todo-form__timer"
+        placeholder="Sec"
+        name="secCount"
+        onChange={(event) => {
+          setSec(event.target.value);
+        }}
+        value={secCount}
+      />
+    </form>
+  );
 }
 
 Header.defaultProps = {
   onItemAdded: () => {},
 };
 
-Header.propTypes = {
-  onItemAdded: PropTypes.func,
-};
+// Header.propTypes = {
+//   onItemAdded: PropTypes.func,
+// };

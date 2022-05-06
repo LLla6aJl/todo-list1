@@ -1,4 +1,6 @@
-import React, { Component } from 'react';
+/* eslint-disable react/jsx-no-constructed-context-values */
+/* eslint-disable no-shadow */
+import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import Header from './components/header';
@@ -7,58 +9,58 @@ import Footer from './components/footer';
 
 import './index.css';
 
-export default class App extends Component {
-  maxId = 100;
+export const UserContext = React.createContext(null);
+export default function App() {
+  let maxId = 100;
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      todoData: [
-        this.createTodoItem('Completed task', 2, 30),
-        this.createTodoItem('Editing task', 2, 10),
-        this.createTodoItem('Active task', 2, 35),
-      ],
-      filter: 'all',
+  const createTodoItem = (label, minCount, secCount) => {
+    maxId += 1;
+    return {
+      label,
+      done: false,
+      id: maxId,
+      date: new Date(),
+      timeToSolve: minCount * 60 + secCount,
     };
-
-    this.toggleProperty = (arr, id, propName) => {
-      const idx = arr.findIndex((el) => el.id === id);
-      const oldItem = arr[idx];
-      const newItem = { ...oldItem, [propName]: !oldItem[propName] };
-      return [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
-    };
-
-    this.filtered = (items, filter) => {
-      switch (filter) {
-        case 'all':
-          return items;
-        case 'active':
-          return items.filter((item) => !item.done);
-        case 'done':
-          return items.filter((item) => item.done);
-        default:
-          return items;
-      }
-    };
-  }
-
-  deleteItem = (id) => {
-    this.setState(({ todoData }) => {
-      const idx = todoData.findIndex((el) => el.id === id);
-      const newArray = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
-      return {
-        todoData: newArray,
-      };
-    });
   };
 
-  addItem = (label, minCount, secCount) => {
+  const [todoData, setData] = useState([
+    createTodoItem('Completed task', 2, 30),
+    createTodoItem('Editing task', 2, 10),
+    createTodoItem('Active task', 2, 35),
+  ]);
+  const [filter, setFilter] = useState('all');
+
+  const filtered = (items, filter) => {
+    switch (filter) {
+      case 'all':
+        return items;
+      case 'active':
+        return items.filter((item) => !item.done);
+      case 'done':
+        return items.filter((item) => item.done);
+      default:
+        return items;
+    }
+  };
+
+  // const deleteItem = (id) => {
+  //     setData(({ todoData }) => {
+  //       const idx = todoData.findIndex((el) => el.id === id);
+  //       const newArray = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
+  //       return {
+  //         todoData: newArray,
+  //       };
+  //     });
+  //   }
+  // };
+
+  const addItem = (label, minCount, secCount) => {
     const item = label.replace(/ +/g, ' ').trim();
     if (item === '') return;
-    const newItem = this.createTodoItem(item, minCount, secCount);
+    const newItem = createTodoItem(item, minCount, secCount);
 
-    this.setState(({ todoData }) => {
+    setData(({ todoData }) => {
       const myarray = [...todoData, newItem];
       return {
         todoData: myarray,
@@ -66,18 +68,23 @@ export default class App extends Component {
     });
   };
 
-  onToggleDone = (id) => {
-    this.setState(({ todoData }) => ({
-      todoData: this.toggleProperty(todoData, id, 'done'),
-    }));
+  const onToggleDone = (id) => {
+    setData(() => {
+      const idx = todoData.findIndex((el) => el.id === id);
+      const oldItem = todoData[idx];
+      const newItem = { ...oldItem, done: !oldItem.done };
+      const newArr = [...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)];
+
+      return newArr;
+    });
   };
 
-  onFilterChange = (filter) => {
-    this.setState({ filter });
+  const onFilterChange = (filter) => {
+    setFilter({ filter });
   };
 
-  onClearCompleted = () => {
-    this.setState(({ todoData }) => {
+  const onClearCompleted = () => {
+    setData(({ todoData }) => {
       const myarray = todoData.filter((el) => !el.done);
       return {
         todoData: myarray,
@@ -85,39 +92,34 @@ export default class App extends Component {
     });
   };
 
-  createTodoItem(label, minCount, secCount) {
-    this.maxId += 1;
-
-    return {
-      label,
-      done: false,
-      id: this.maxId,
-      date: new Date(),
-      timeToSolve: minCount * 60 + secCount,
-    };
-  }
-
-  render() {
-    const { todoData, filter } = this.state;
-    const visibleItems = this.filtered(todoData, filter);
-    const doneCount = todoData.filter((el) => el.done).length;
-    const todoCount = todoData.length - doneCount;
-
-    return (
-      <section className="todoapp">
-        <Header onItemAdded={this.addItem} />
+  const visibleItems = filtered(todoData, filter);
+  const doneCount = todoData.filter((el) => el.done).length;
+  const todoCount = todoData.length - doneCount;
+  const contextValue = {
+    visibleItems,
+    onToggleDone,
+    addItem,
+    onFilterChange,
+    onClearCompleted,
+    todoCount,
+    filter,
+  };
+  return (
+    <section className="todoapp">
+      <UserContext.Provider value={contextValue}>
+        <Header />
         <section className="main">
-          <TodoList todos={visibleItems} onDeleted={this.deleteItem} onToggleDone={this.onToggleDone} />
+          <TodoList />
           <Footer
             toDo={todoCount}
             filter={filter}
-            onFilterChange={this.onFilterChange}
-            onClearCompleted={this.onClearCompleted}
+            onFilterChange={onFilterChange}
+            onClearCompleted={onClearCompleted}
           />
         </section>
-      </section>
-    );
-  }
+      </UserContext.Provider>
+    </section>
+  );
 }
 
 const container = document.getElementById('root');
