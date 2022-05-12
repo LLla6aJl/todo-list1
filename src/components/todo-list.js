@@ -3,6 +3,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-cycle
 import { UserContext } from '..';
 
+// eslint-disable-next-line import/no-cycle
 import TodoListItem from './task';
 
 function TodoList() {
@@ -15,13 +16,3 @@ function TodoList() {
 }
 
 export default TodoList;
-
-TodoList.defaultProps = {
-  onDeleted: () => {},
-  onToggleDone: () => {},
-};
-
-// TodoList.propTypes = {
-//   onDeleted: PropTypes.func,
-//   onToggleDone: PropTypes.func,
-// };

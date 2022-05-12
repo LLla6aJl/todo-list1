@@ -1,12 +1,18 @@
-import PropTypes from 'prop-types';
+import React from 'react';
 
+// eslint-disable-next-line import/no-cycle
+import { UserContext } from '..';
+
+// eslint-disable-next-line import/no-cycle
 import Filters from './filters';
 
-function Footer({ toDo, filter, onFilterChange, onClearCompleted }) {
+function Footer() {
+  const value = React.useContext(UserContext);
+  const { todoCount, filter, onClearCompleted } = value;
   return (
     <footer className="footer">
-      <span className="todo-count">{toDo} items left</span>
-      <Filters filter={filter} onFilterChange={onFilterChange} />
+      <span className="todo-count">{todoCount} items left</span>
+      <Filters filter={filter} />
       <button type="button" className="clear-completed" onClick={() => onClearCompleted()}>
         Clear completed
       </button>
@@ -14,17 +20,3 @@ function Footer({ toDo, filter, onFilterChange, onClearCompleted }) {
   );
 }
 export default Footer;
-
-Footer.defaultProps = {
-  toDo: 0,
-  filter: 'all',
-  onFilterChange: () => {},
-  onClearCompleted: () => {},
-};
-
-Footer.propTypes = {
-  toDo: PropTypes.number,
-  filter: PropTypes.string,
-  onFilterChange: PropTypes.func,
-  onClearCompleted: PropTypes.func,
-};

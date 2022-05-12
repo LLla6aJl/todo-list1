@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable react/jsx-no-constructed-context-values */
 /* eslint-disable no-shadow */
 import React, { useState } from 'react';
@@ -11,14 +12,13 @@ import './index.css';
 
 export const UserContext = React.createContext(null);
 export default function App() {
-  let maxId = 100;
-
   const createTodoItem = (label, minCount, secCount) => {
-    maxId += 1;
+    const id = Date.now() + Math.floor(Math.random() * 10000);
+    // eslint-disable-next-line no-return-assign
     return {
       label,
       done: false,
-      id: maxId,
+      id,
       date: new Date(),
       timeToSolve: minCount * 60 + secCount,
     };
@@ -44,27 +44,21 @@ export default function App() {
     }
   };
 
-  // const deleteItem = (id) => {
-  //     setData(({ todoData }) => {
-  //       const idx = todoData.findIndex((el) => el.id === id);
-  //       const newArray = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
-  //       return {
-  //         todoData: newArray,
-  //       };
-  //     });
-  //   }
-  // };
+  const deleteItem = (id) => {
+    setData((todoData) => {
+      const idx = todoData.findIndex((el) => el.id === id);
+      return [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
+    });
+  };
 
   const addItem = (label, minCount, secCount) => {
     const item = label.replace(/ +/g, ' ').trim();
     if (item === '') return;
     const newItem = createTodoItem(item, minCount, secCount);
 
-    setData(({ todoData }) => {
-      const myarray = [...todoData, newItem];
-      return {
-        todoData: myarray,
-      };
+    setData((todoData) => {
+      const newarr = [...todoData, newItem];
+      return newarr;
     });
   };
 
@@ -73,22 +67,18 @@ export default function App() {
       const idx = todoData.findIndex((el) => el.id === id);
       const oldItem = todoData[idx];
       const newItem = { ...oldItem, done: !oldItem.done };
-      const newArr = [...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)];
-
-      return newArr;
+      return [...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)];
     });
   };
 
   const onFilterChange = (filter) => {
-    setFilter({ filter });
+    setFilter(filter);
   };
 
   const onClearCompleted = () => {
-    setData(({ todoData }) => {
+    setData((todoData) => {
       const myarray = todoData.filter((el) => !el.done);
-      return {
-        todoData: myarray,
-      };
+      return myarray;
     });
   };
 
@@ -98,6 +88,7 @@ export default function App() {
   const contextValue = {
     visibleItems,
     onToggleDone,
+    deleteItem,
     addItem,
     onFilterChange,
     onClearCompleted,

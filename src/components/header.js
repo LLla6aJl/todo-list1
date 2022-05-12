@@ -19,7 +19,6 @@ export default function Header() {
   // };
 
   const onSubmit = (e) => {
-    console.log(e);
     if (minCount || secCount)
       if (e.key === 'Enter') {
         const minCountValue = +minCount;

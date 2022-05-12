@@ -1,5 +1,5 @@
 /* eslint-disable import/no-cycle */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
 
 import { UserContext } from '..';
@@ -7,41 +7,48 @@ import { UserContext } from '..';
 export default function TodoListItem(props) {
   const value = React.useContext(UserContext);
 
-  const { deleteItem, onToggleDone } = value;
+  const { onToggleDone, deleteItem } = value;
   const { id, label, done, date, timeToSolve } = props;
 
   const [timeToSolved, setTimeToSolve] = useState(timeToSolve);
   const [timeGo, setTimeGo] = useState(false);
-  let counterID;
-  // componentWillUnmount() {
-  //   clearInterval(this.counterID);
-  // }
+  const [intervalId, setIntervalId] = useState(0);
 
-  const secDecrement = () => {
-    // const { timeToSolve, timeGo } = this.state;
-    if (timeToSolved === 0 && timeGo === true) {
-      clearInterval(counterID);
+  let updateTimeToSolved = timeToSolve;
+
+  const secDecrement = (newIntervalId) => {
+    if (updateTimeToSolved === 0) {
+      clearInterval(newIntervalId);
       setTimeGo(false);
+      return;
     }
-    if (timeToSolved > 0) {
-      setTimeToSolve((time) => time - 1);
-      setTimeGo(true);
+    if (updateTimeToSolved > 0) {
+      updateTimeToSolved -= 1;
+      setTimeToSolve(updateTimeToSolved);
     }
   };
 
   const handlePause = (event) => {
     event.stopPropagation();
     setTimeGo(false);
-    clearInterval(counterID);
+    clearInterval(intervalId);
   };
 
   const handleStart = (event) => {
     event.stopPropagation();
     setTimeGo(true);
-    counterID = setInterval(() => {
-      secDecrement();
+    const newIntervalId = setInterval(() => {
+      secDecrement(newIntervalId);
     }, 1000);
+    setIntervalId(newIntervalId);
   };
+
+  useEffect(
+    () => () => {
+      clearInterval(intervalId);
+    },
+    [timeToSolve, intervalId]
+  );
 
   const buttonTimer = !timeGo ? (
     /* eslint-disable-next-line jsx-a11y/control-has-associated-label */
@@ -56,10 +63,10 @@ export default function TodoListItem(props) {
   if (done) {
     classNames += 'completed';
     checked = true;
-    setTimeToSolve(0);
-    clearInterval(counterID);
+    // setTimeToSolve(0);
+    // clearInterval(counterID);
   }
-  // const createdTime = formatDistanceToNow(date, { includeSeconds: true });
+  const createdTime = formatDistanceToNow(date, { includeSeconds: true });
 
   return (
     <li className={classNames}>
@@ -67,47 +74,24 @@ export default function TodoListItem(props) {
         <input
           className="toggle"
           readOnly
-          id={id}
           type="checkbox"
           onClick={() => {
             onToggleDone(id);
           }}
           checked={checked}
         />
-        <label
-          role="presentation"
-          htmlFor={label}
-          // onClick={(id) => onToggleDone(id)}
-          // onKeyUp={(id) => onToggleDone(id)}
-        >
-          <span
-            role="presentation"
-            className="title"
-            // onClick={(id) => onToggleDone(id)}
-            // onKeyUp={(id) => onToggleDone(id)}
-          >
+        <label role="presentation" htmlFor={label} onClick={() => onToggleDone(id)} onKeyUp={() => onToggleDone(id)}>
+          <span role="presentation" className="title" onClick={() => onToggleDone(id)} onKeyUp={() => onToggleDone(id)}>
             {label}
           </span>
-          <span className="description">{/* {buttonTimer} {format(timeToSolve * 1000, 'mm:ss')} */}</span>
-          {/* <span className="description"> created {createdTime} ago</span> */}
+          <span className="description">
+            {buttonTimer} {format(timeToSolved * 1000, 'mm:ss')}
+          </span>
+          <span className="description"> created {createdTime} ago</span>
         </label>
         <button type="button" className="icon icon-edit" />
-        <button type="button" className="icon icon-destroy" onClick={deleteItem} aria-label="log out" />
+        <button type="button" className="icon icon-destroy" onClick={() => deleteItem(id)} aria-label="log out" />
       </div>
     </li>
   );
 }
-
-// TodoListItem.defaultProps = {
-//   label: 'default task',
-//   onDeleted: () => {},
-//   onToggleDone: () => {},
-//   done: true,
-// };
-
-// TodoListItem.propTypes = {
-//   label: PropTypes.string,
-//   onDeleted: PropTypes.func,
-//   onToggleDone: PropTypes.func,
-//   done: PropTypes.bool,
-// };

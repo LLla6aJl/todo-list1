@@ -1,6 +1,14 @@
 // import PropTypes from 'prop-types';
+import React from 'react';
 
-export default function Filters(filter, onFilterChange) {
+// eslint-disable-next-line import/no-cycle
+import { UserContext } from '..';
+
+export default function Filters() {
+  const value = React.useContext(UserContext);
+
+  const { onFilterChange, filter } = value;
+
   const buttonsArray = [
     { name: 'all', label: 'all' },
     { name: 'active', label: 'Active' },
@@ -20,13 +28,3 @@ export default function Filters(filter, onFilterChange) {
   });
   return <ul className="filters">{buttons}</ul>;
 }
-
-// Filters.defaultProps = {
-//   filter: 'all',
-//   onFilterChange: () => {},
-// };
-
-// Filters.propTypes = {
-//   filter: PropTypes.string,
-//   onFilterChange: PropTypes.func,
-// };
