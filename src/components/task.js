@@ -18,6 +18,7 @@ export default function TodoListItem(props) {
 
   const secDecrement = (newIntervalId) => {
     if (updateTimeToSolved === 0) {
+      onToggleDone(id);
       clearInterval(newIntervalId);
       setTimeGo(false);
       return;
@@ -63,9 +64,14 @@ export default function TodoListItem(props) {
   if (done) {
     classNames += 'completed';
     checked = true;
-    // setTimeToSolve(0);
-    // clearInterval(counterID);
+    clearInterval(intervalId);
   }
+  const timer = !checked ? (
+    <span className="description">
+      {buttonTimer} {format(timeToSolved * 1000, 'mm:ss')}
+    </span>
+  ) : null;
+
   const createdTime = formatDistanceToNow(date, { includeSeconds: true });
 
   return (
@@ -84,9 +90,7 @@ export default function TodoListItem(props) {
           <span role="presentation" className="title" onClick={() => onToggleDone(id)} onKeyUp={() => onToggleDone(id)}>
             {label}
           </span>
-          <span className="description">
-            {buttonTimer} {format(timeToSolved * 1000, 'mm:ss')}
-          </span>
+          {timer}
           <span className="description"> created {createdTime} ago</span>
         </label>
         <button type="button" className="icon icon-edit" />
